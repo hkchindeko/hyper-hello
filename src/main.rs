@@ -5,13 +5,14 @@ use hyper::{Body, Request, Response};
 use hyper::service::service_fn;
 
 async fn hello_world(_req: Request<Body>) -> Result<Response<Body>, Infallible> {
-    Ok(Response::new("Hello, world".into()))
+    Ok(Response::new("Hello, world from an HTTP Server inside a WASI Container".into()))
 }
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // We'll bind to 127.0.0.1:3000
-    let addr = SocketAddr::from(([127,0,0,1], 3000));
+    // let addr = SocketAddr::from(([127,0,0,1], 3000));
+    let addr = "0.0.0.0:3000".parse::<SocketAddr>()?;
 
     #[cfg(target_arch = "wasm32")]
     {
