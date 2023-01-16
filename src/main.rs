@@ -20,11 +20,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
         let listener = TcpListener::bind(addr).await?;
         println!("Listening on http://{}", addr);
+
+        // let make_svc = make_service_fn(|_conn| {
+        //     async { Ok::<_, Infallible>(service_fn(hello_world))}
+        // });
+
+        let service = service_fn(hello_world);
+
         loop {
             let (stream, _) = listener.accept().await?;
 
             tokio::task::spawn(async move {
-                if let Err(err) = Http::new().serve_connection(stream, service_fn(hello_world)).await {
+                if let Err(err) = Http::new().serve_connection(stream, service).await {
                     println!("Error serving connection: {:?}", err);
                 }
             });
@@ -33,8 +40,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     #[cfg(not(target_arch = "wasm32"))]
     {
-        use hyper::service::make_service_fn;
         use hyper::Server;
+        use hyper::service::make_service_fn;
 
         // A 'Service' is needed for ever connection, so this
         // creates one from our 'hello_world' function.
